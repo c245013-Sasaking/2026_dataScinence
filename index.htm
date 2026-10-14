@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Counter Web Application</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    boxShadow: {
+                        'glow-positive': '0 0 25px rgba(34, 197, 94, 0.25)',
+                        'glow-negative': '0 0 25px rgba(239, 68, 68, 0.25)',
+                        'glow-neutral': '0 0 25px rgba(168, 85, 247, 0.25)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom smooth transition styling */
+        .number-transition {
+            transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.15s ease-out, color 0.3s ease;
+        }
+        
+        .btn-press {
+            transition: transform 0.1s ease, box-shadow 0.15s ease, background-color 0.2s ease;
+        }
+        
+        .btn-press:active {
+            transform: scale(0.92);
+        }
+
+        /* Pulse subtle background blur glow */
+        .ambient-glow {
+            transition: background 0.5s ease;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between items-center p-4 selection:bg-purple-500 selection:text-white font-sans overflow-x-hidden">
+
+    <header class="w-full max-w-md pt-6 pb-2 text-center">
+        <h1 class="text-xs uppercase tracking-widest font-bold text-slate-400 bg-slate-900/80 inline-block px-4 py-1.5 rounded-full border border-slate-800 backdrop-blur-md shadow-sm">
+            Interactive Counter Application
+        </h1>
+    </header>
+
+    <main class="w-full max-w-md my-auto flex flex-col items-center">
+        <!-- Ambient background aura that reacts to value -->
+        <div id="ambient-aura" class="absolute w-72 h-72 rounded-full bg-purple-600/10 blur-3xl -z-10 pointer-events-none transition-all duration-500"></div>
+
+        <!-- Main Counter Card -->
+        <div class="w-full bg-slate-900/90 border border-slate-800/80 rounded-3xl p-6 sm:p-8 backdrop-blur-xl shadow-2xl flex flex-col items-center relative">
+            
+            <!-- Quick Controls Bar -->
+            <div class="w-full flex justify-between items-center mb-6 text-xs text-slate-400 font-medium">
+                <span id="step-indicator" class="bg-slate-800/60 px-2.5 py-1 rounded-lg border border-slate-700/50">Step: 1</span>
+                <button id="reset-btn" class="hover:text-slate-200 transition-colors flex items-center gap-1 bg-slate-800/40 hover:bg-slate-800 px-3 py-1 rounded-lg border border-slate-800 active:scale-95" title="Reset to zero (Key: R)">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                    Reset
+                </button>
+            </div>
+
+            <!-- Counter Controls Layout: [ MINUS BUTTON ] [ NUMBER DISPLAY ] [ PLUS BUTTON ] -->
+            <div class="w-full flex items-center justify-between gap-4 sm:gap-6 my-4">
+                
+                <!-- Left Decrease Button (-) -->
+                <button id="decrement-btn" 
+                        class="btn-press flex-1 aspect-square max-w-[80px] sm:max-w-[96px] bg-slate-800 hover:bg-rose-600/20 text-rose-400 hover:text-rose-300 border border-slate-700 hover:border-rose-500/50 rounded-2xl flex items-center justify-center text-3xl sm:text-4xl font-semibold shadow-lg focus:outline-none focus:ring-2 focus:ring-rose-500/40 select-none cursor-pointer"
+                        aria-label="Decrease Counter"
+                        title="Decrease (Key: Left Arrow / -)">
+                    <svg class="w-8 h-8 sm:w-10 sm:h-10 stroke-current" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M20 12H4"/>
+                    </svg>
+                </button>
+
+                <!-- Centered Counter Number Display -->
+                <div class="flex-1 flex justify-center items-center h-28 sm:h-32 select-none overflow-hidden">
+                    <span id="counter-value" class="number-transition font-mono text-6xl sm:text-7xl font-extrabold text-slate-100 tracking-tight">
+                        0
+                    </span>
+                </div>
+
+                <!-- Right Increase Button (+) -->
+                <button id="increment-btn" 
+                        class="btn-press flex-1 aspect-square max-w-[80px] sm:max-w-[96px] bg-slate-800 hover:bg-emerald-600/20 text-emerald-400 hover:text-emerald-300 border border-slate-700 hover:border-emerald-500/50 rounded-2xl flex items-center justify-center text-3xl sm:text-4xl font-semibold shadow-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/40 select-none cursor-pointer"
+                        aria-label="Increase Counter"
+                        title="Increase (Key: Right Arrow / +)">
+                    <svg class="w-8 h-8 sm:w-10 sm:h-10 stroke-current" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Customization / Step Options -->
+            <div class="w-full mt-6 pt-5 border-t border-slate-800/80 flex items-center justify-between gap-2">
+                <span class="text-xs text-slate-400 font-medium">Increment Step:</span>
+                <div class="flex items-center gap-1.5 bg-slate-950 p-1 rounded-xl border border-slate-800">
+                    <button class="step-btn px-3 py-1 text-xs font-semibold rounded-lg text-slate-400 hover:text-slate-200 transition-colors bg-transparent data-[active=true]:bg-slate-800 data-[active=true]:text-purple-400 data-[active=true]:shadow-sm" data-step="1" data-active="true">1</button>
+                    <button class="step-btn px-3 py-1 text-xs font-semibold rounded-lg text-slate-400 hover:text-slate-200 transition-colors bg-transparent data-[active=true]:bg-slate-800 data-[active=true]:text-purple-400 data-[active=true]:shadow-sm" data-step="5" data-active="false">5</button>
+                    <button class="step-btn px-3 py-1 text-xs font-semibold rounded-lg text-slate-400 hover:text-slate-200 transition-colors bg-transparent data-[active=true]:bg-slate-800 data-[active=true]:text-purple-400 data-[active=true]:shadow-sm" data-step="10" data-active="false">10</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Keyboard Shortcuts Hint -->
+        <div class="mt-6 flex flex-wrap justify-center gap-3 text-slate-500 text-xs">
+            <span class="flex items-center gap-1 bg-slate-900/50 px-2.5 py-1 rounded-md border border-slate-800/60">
+                <kbd class="px-1.5 py-0.5 bg-slate-800 text-slate-300 rounded font-mono text-[10px]">←</kbd> / <kbd class="px-1.5 py-0.5 bg-slate-800 text-slate-300 rounded font-mono text-[10px]">-</kbd> Decrease
+            </span>
+            <span class="flex items-center gap-1 bg-slate-900/50 px-2.5 py-1 rounded-md border border-slate-800/60">
+                <kbd class="px-1.5 py-0.5 bg-slate-800 text-slate-300 rounded font-mono text-[10px]">→</kbd> / <kbd class="px-1.5 py-0.5 bg-slate-800 text-slate-300 rounded font-mono text-[10px]">+</kbd> Increase
+            </span>
+            <span class="flex items-center gap-1 bg-slate-900/50 px-2.5 py-1 rounded-md border border-slate-800/60">
+                <kbd class="px-1.5 py-0.5 bg-slate-800 text-slate-300 rounded font-mono text-[10px]">R</kbd> Reset
+            </span>
+        </div>
+    </main>
+
+    <footer class="w-full text-center py-4 text-xs text-slate-600">
+        Minimal Responsive Counter App
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // State variables
+            let count = 0;
+            let currentStep = 1;
+
+            // DOM Elements
+            const counterDisplay = document.getElementById('counter-value');
+            const decrementBtn = document.getElementById('decrement-btn');
+            const incrementBtn = document.getElementById('increment-btn');
+            const resetBtn = document.getElementById('reset-btn');
+            const ambientAura = document.getElementById('ambient-aura');
+            const stepButtons = document.querySelectorAll('.step-btn');
+            const stepIndicator = document.getElementById('step-indicator');
+
+            // Sound Effect Generator using Web Audio API (No external assets required)
+            const playSound = (freq, type = 'sine') => {
+                try {
+                    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    
+                    osc.type = type;
+                    osc.frequency.setValueAtTime(freq, ctx.currentTime);
+                    
+                    gain.gain.setValueAtTime(0.08, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
+
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.1);
+                } catch (e) {
+                    // Audio context fallback if muted/unsupported
+                }
+            };
+
+            // Update UI State Function
+            function updateCounter(direction = 0) {
+                // Apply subtle animation pop
+                counterDisplay.style.transform = direction > 0 ? 'scale(1.15) translateY(-2px)' : direction < 0 ? 'scale(0.85) translateY(2px)' : 'scale(1.1)';
+                counterDisplay.style.opacity = '0.8';
+
+                setTimeout(() => {
+                    counterDisplay.textContent = count;
+                    counterDisplay.style.transform = 'scale(1) translateY(0)';
+                    counterDisplay.style.opacity = '1';
+                }, 75);
+
+                // Update text color & dynamic ambient lighting based on value
+                if (count > 0) {
+                    counterDisplay.className = "number-transition font-mono text-6xl sm:text-7xl font-extrabold text-emerald-400 tracking-tight";
+                    ambientAura.className = "absolute w-72 h-72 rounded-full bg-emerald-500/15 blur-3xl -z-10 pointer-events-none transition-all duration-500";
+                } else if (count < 0) {
+                    counterDisplay.className = "number-transition font-mono text-6xl sm:text-7xl font-extrabold text-rose-400 tracking-tight";
+                    ambientAura.className = "absolute w-72 h-72 rounded-full bg-rose-500/15 blur-3xl -z-10 pointer-events-none transition-all duration-500";
+                } else {
+                    counterDisplay.className = "number-transition font-mono text-6xl sm:text-7xl font-extrabold text-slate-100 tracking-tight";
+                    ambientAura.className = "absolute w-72 h-72 rounded-full bg-purple-600/10 blur-3xl -z-10 pointer-events-none transition-all duration-500";
+                }
+            }
+
+            // Button Event Listeners
+            decrementBtn.addEventListener('click', () => {
+                count -= currentStep;
+                playSound(220, 'sine');
+                updateCounter(-1);
+            });
+
+            incrementBtn.addEventListener('click', () => {
+                count += currentStep;
+                playSound(330, 'sine');
+                updateCounter(1);
+            });
+
+            resetBtn.addEventListener('click', () => {
+                if (count !== 0) {
+                    count = 0;
+                    playSound(180, 'triangle');
+                    updateCounter(0);
+                }
+            });
+
+            // Step selection logic
+            stepButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    stepButtons.forEach(btn => btn.setAttribute('data-active', 'false'));
+                    button.setAttribute('data-active', 'true');
+                    currentStep = parseInt(button.getAttribute('data-step'), 10);
+                    stepIndicator.textContent = `Step: ${currentStep}`;
+                    playSound(440, 'sine');
+                });
+            });
+
+            // Keyboard navigation support
+            document.addEventListener('keydown', (e) => {
+                // Ignore if typing in an input field (if added in future)
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+                if (e.key === 'ArrowRight' || e.key === '+' || e.key === '=') {
+                    incrementBtn.click();
+                    incrementBtn.classList.add('ring-2', 'ring-emerald-500/50');
+                    setTimeout(() => incrementBtn.classList.remove('ring-2', 'ring-emerald-500/50'), 150);
+                } else if (e.key === 'ArrowLeft' || e.key === '-') {
+                    decrementBtn.click();
+                    decrementBtn.classList.add('ring-2', 'ring-rose-500/50');
+                    setTimeout(() => decrementBtn.classList.remove('ring-2', 'ring-rose-500/50'), 150);
+                } else if (e.key === 'r' || e.key === 'R') {
+                    resetBtn.click();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
